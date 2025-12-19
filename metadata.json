@@ -1,0 +1,5 @@
+{
+  "name": "WoolData Architect",
+  "description": "A prototype for storing data within 3D Minecraft wool structures. Encode text or files into 16-color wool blocks and visualize them in 3D space.",
+  "requestFramePermissions": []
+}
