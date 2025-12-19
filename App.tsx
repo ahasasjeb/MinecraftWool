@@ -1,54 +1,185 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Upload, FileText, Download, Trash2, Info, Share2, FileDown, BookOpen, AlertTriangle, X } from 'lucide-react';
+import { Box, Upload, FileText, Download, Trash2, Info, Share2, FileDown, BookOpen, AlertTriangle, X, Code, Database, Layers, Cpu } from 'lucide-react';
 import { encodeData, decodeData, blocksToIdString, idStringToBlocks } from './utils/converter';
 import { EncodedData, ProcessingStatus } from './types';
 import { WoolVisualizer } from './components/WoolVisualizer';
 import { Legend } from './components/Legend';
+import { WOOL_IDS, WOOL_NAMES, WOOL_COLORS } from './constants';
 
 const TechModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-    <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
-      <div className="flex justify-between items-center p-4 border-b border-gray-800 bg-gray-800/50">
-        <h2 className="text-lg font-bold flex items-center space-x-2 text-blue-400">
-          <BookOpen size={20} />
-          <span>技术原理详解</span>
-        </h2>
-        <button onClick={onClose} className="p-1 hover:bg-gray-700 rounded transition-colors"><X size={20} /></button>
+  <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+    <div className="bg-[#0f0f0f] border border-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+      <div className="flex justify-between items-center p-5 border-b border-gray-800 bg-[#141414]">
+        <div>
+            <h2 className="text-xl font-bold flex items-center space-x-2 text-blue-400">
+            <Cpu size={24} />
+            <span>WoolData 技术白皮书</span>
+            </h2>
+            <p className="text-xs text-gray-500 mt-1">WoolData Architecture Technical Specification</p>
+        </div>
+        <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-full transition-colors text-gray-400 hover:text-white"><X size={24} /></button>
       </div>
-      <div className="p-6 overflow-y-auto text-sm space-y-4 text-gray-300 leading-relaxed">
-        <section>
-          <h3 className="text-white font-semibold mb-2">1. 数据存储机制 (Nibbles)</h3>
-          <p>
-            Minecraft有16种颜色的羊毛。由于 $2^4 = 16$，我们可以用一个羊毛方块完美表示 **4位二进制 (4 bits)**，也就是 **半个字节 (Nibble)**。
-            因此，每两个羊毛方块可以组成一个完整的字节 (8 bits)。这种方式比二进制（0/1）堆叠更节省空间（高度减少一半）。
-          </p>
-        </section>
-        
-        <section>
-          <h3 className="text-white font-semibold mb-2">2. 数据包结构 (Packet Structure)</h3>
-          <p>为了区分文件类型并确保数据安全，我们在原始数据外包裹了一层协议头：</p>
-          <ul className="list-disc pl-5 space-y-1 text-gray-400">
-            <li><span className="text-yellow-400">元数据长度 (2 Bytes)</span>: 指示接下来的JSON头有多长。</li>
-            <li><span className="text-green-400">元数据 (Variable)</span>: JSON格式字符串，包含文件名、MIME类型、时间戳。</li>
-            <li><span className="text-blue-400">有效载荷 (Variable)</span>: 实际的文件或文本二进制数据。</li>
-            <li><span className="text-red-400">校验和 (2 Bytes)</span>: 基于 Fletcher-16 算法生成的签名，用于检测方块是否丢失或摆放错误。</li>
-          </ul>
-        </section>
+      
+      <div className="p-0 overflow-y-auto custom-scrollbar flex-1">
+        <div className="max-w-3xl mx-auto py-8 px-6 space-y-10">
+            
+            {/* Section 1: Core Concept */}
+            <section className="space-y-4">
+                <div className="flex items-center space-x-2 text-emerald-400 border-b border-gray-800 pb-2">
+                    <Database size={20} />
+                    <h3 className="text-lg font-bold">1. 核心存储机制 (Nibble Storage)</h3>
+                </div>
+                <div className="prose prose-invert text-sm text-gray-400 leading-relaxed">
+                    <p>
+                        Minecraft 拥有 16 种颜色的羊毛，这并非巧合。在计算机科学中，16 正好等于 $2^4$，这意味着一个羊毛方块可以完美表示 **4位 (4 bits)** 的数据，即 **半个字节 (Nibble)**。
+                    </p>
+                    <div className="bg-gray-900 p-4 rounded-lg border border-gray-800 font-mono text-xs my-4">
+                        <div className="flex justify-between items-center text-gray-500 mb-2">
+                            <span>原始字节 (1 Byte)</span>
+                            <span>=</span>
+                            <span>8 Bits</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-gray-800 p-3 rounded text-center border border-gray-700">
+                                <div className="text-blue-400 font-bold text-lg">High Nibble</div>
+                                <div className="text-white">1011 (11)</div>
+                                <div className="text-xs text-gray-500 mt-1">蓝色羊毛 (Blue)</div>
+                            </div>
+                            <div className="bg-gray-800 p-3 rounded text-center border border-gray-700">
+                                <div className="text-yellow-400 font-bold text-lg">Low Nibble</div>
+                                <div className="text-white">0100 (4)</div>
+                                <div className="text-xs text-gray-500 mt-1">黄色羊毛 (Yellow)</div>
+                            </div>
+                        </div>
+                        <div className="mt-2 text-center text-gray-500">
+                            HEX: 0xB4 &nbsp;|&nbsp; Decimal: 180
+                        </div>
+                    </div>
+                    <p>
+                        相比于二进制（0/1，黑色/白色）堆叠，使用 16进制（Hex）堆叠可以将建筑高度 **压缩 50%**，大幅提升数据密度。
+                    </p>
+                </div>
+            </section>
 
-        <section>
-          <h3 className="text-white font-semibold mb-2">3. 3D 映射 (Mapping)</h3>
-          <p>
-            数据被平铺在 16x16 的区块 (Chunk) 中。写满一层 (256个方块) 后，Y轴增加，向上堆叠。
-            这种结构与 Minecraft 的 Chunk 存储机制天然契合。
-          </p>
-        </section>
+            {/* Section 2: Data Protocol */}
+            <section className="space-y-4">
+                <div className="flex items-center space-x-2 text-orange-400 border-b border-gray-800 pb-2">
+                    <Code size={20} />
+                    <h3 className="text-lg font-bold">2. 二进制协议结构 (Binary Protocol)</h3>
+                </div>
+                <p className="text-sm text-gray-400">
+                    为了支持文件还原、元数据解析及完整性校验，我们将原始数据封装在一个自定义的二进制包中。结构如下：
+                </p>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-mono border-collapse">
+                        <thead>
+                            <tr className="bg-gray-800 text-gray-300">
+                                <th className="p-2 border border-gray-700">偏移 (Offset)</th>
+                                <th className="p-2 border border-gray-700">长度 (Size)</th>
+                                <th className="p-2 border border-gray-700">类型 (Type)</th>
+                                <th className="p-2 border border-gray-700">说明 (Description)</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-gray-400">
+                            <tr>
+                                <td className="p-2 border border-gray-800">0x00</td>
+                                <td className="p-2 border border-gray-800">2 Bytes</td>
+                                <td className="p-2 border border-gray-800 text-yellow-500">UInt16 (BE)</td>
+                                <td className="p-2 border border-gray-800">元数据长度 (Meta Length, N)</td>
+                            </tr>
+                            <tr>
+                                <td className="p-2 border border-gray-800">0x02</td>
+                                <td className="p-2 border border-gray-800">N Bytes</td>
+                                <td className="p-2 border border-gray-800 text-green-500">UTF-8 String</td>
+                                <td className="p-2 border border-gray-800">元数据 JSON (文件名, MIME, 时间戳)</td>
+                            </tr>
+                            <tr>
+                                <td className="p-2 border border-gray-800">0x02 + N</td>
+                                <td className="p-2 border border-gray-800">Variable</td>
+                                <td className="p-2 border border-gray-800 text-blue-500">Binary</td>
+                                <td className="p-2 border border-gray-800">有效载荷 (File Payload)</td>
+                            </tr>
+                            <tr>
+                                <td className="p-2 border border-gray-800">EOF - 2</td>
+                                <td className="p-2 border border-gray-800">2 Bytes</td>
+                                <td className="p-2 border border-gray-800 text-red-500">UInt8[2]</td>
+                                <td className="p-2 border border-gray-800">Fletcher-16 校验和 (Checksum)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div className="bg-gray-900/50 p-3 rounded border border-gray-800 text-xs text-gray-500">
+                    <span className="font-bold text-gray-400">校验算法 (Fletcher-16):</span>
+                    <br />
+                    <code>sum1 = (sum1 + byte) % 255;</code>
+                    <br />
+                    <code>sum2 = (sum2 + sum1) % 255;</code>
+                </div>
+            </section>
 
-        <section>
-            <h3 className="text-white font-semibold mb-2">4. 导出格式 (English IDs)</h3>
-            <p>
-                为了方便 Mod 读取或玩家手动建造（如果疯了的话），导出文件由 Minecraft ID 组成，例如 <code className="bg-black px-1 rounded">orange_wool</code>。
-            </p>
-        </section>
+             {/* Section 3: Coordinate Mapping */}
+             <section className="space-y-4">
+                <div className="flex items-center space-x-2 text-purple-400 border-b border-gray-800 pb-2">
+                    <Layers size={20} />
+                    <h3 className="text-lg font-bold">3. 3D 空间映射 (Spatial Mapping)</h3>
+                </div>
+                <div className="text-sm text-gray-400 space-y-2">
+                    <p>
+                        数据流被线性转换为方块列表，然后填充到 Minecraft 的标准区块 (Chunk) 空间中。一个 Chunk 的截面是 16x16。
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+                         <div className="bg-gray-900 p-4 rounded border border-gray-800">
+                             <h4 className="font-bold text-gray-300 mb-2">坐标计算公式</h4>
+                             <code className="text-xs text-blue-300 block mb-1">i = 线性索引 (Block Index)</code>
+                             <code className="text-xs text-green-300 block mb-1">y = floor(i / 256)</code>
+                             <code className="text-xs text-green-300 block mb-1">z = floor((i % 256) / 16)</code>
+                             <code className="text-xs text-green-300 block">x = (i % 256) % 16</code>
+                         </div>
+                         <div className="bg-gray-900 p-4 rounded border border-gray-800">
+                             <h4 className="font-bold text-gray-300 mb-2">填充顺序</h4>
+                             <ol className="list-decimal list-inside text-xs space-y-1">
+                                 <li>X 轴 (West -&gt; East)</li>
+                                 <li>Z 轴 (North -&gt; South)</li>
+                                 <li>Y 轴 (Bottom -&gt; Top)</li>
+                             </ol>
+                         </div>
+                    </div>
+                </div>
+            </section>
+
+             {/* Section 4: Mapping Table */}
+             <section className="space-y-4">
+                <div className="flex items-center space-x-2 text-pink-400 border-b border-gray-800 pb-2">
+                    <BookOpen size={20} />
+                    <h3 className="text-lg font-bold">4. 完整映射表 (ID Mapping)</h3>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                     {Object.keys(WOOL_IDS).map((k) => {
+                         const key = Number(k);
+                         return (
+                             <div key={key} className="bg-gray-900 p-2 rounded border border-gray-800 flex flex-col space-y-1">
+                                 <div className="flex justify-between items-center">
+                                     <span className="font-bold text-white">Value: {key}</span>
+                                     <span className="font-mono text-gray-500">0x{key.toString(16).toUpperCase()}</span>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                     <div className="w-3 h-3 rounded-full" style={{backgroundColor: WOOL_COLORS[key as any]}}></div>
+                                     <span className="text-gray-400">{WOOL_NAMES[key as any]}</span>
+                                 </div>
+                                 <div className="text-[10px] text-gray-600 font-mono truncate">
+                                     {WOOL_IDS[key as any]}
+                                 </div>
+                             </div>
+                         )
+                     })}
+                </div>
+            </section>
+
+        </div>
+      </div>
+      
+      <div className="p-4 border-t border-gray-800 bg-[#141414] text-center text-xs text-gray-600">
+        Generated by WoolData Architect Prototype v0.2
       </div>
     </div>
   </div>
@@ -189,7 +320,7 @@ const App: React.FC = () => {
              className="flex items-center space-x-1 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-gray-800"
            >
              <BookOpen size={16} />
-             <span>技术详解</span>
+             <span>技术白皮书</span>
            </button>
            <span className="flex items-center space-x-1 border-l border-gray-700 pl-4">
              <Info size={14} />
